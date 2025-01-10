@@ -14,6 +14,7 @@
             background-color: #ffeb3b; /* Fondo amarillo brillante */
             font-family: 'Comic Sans MS', cursive, sans-serif; /* Fuente divertida */
             overflow: hidden;
+            position: relative;
         }
         #startButton {
             padding: 0;
@@ -34,9 +35,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
+            font-size: 50px;
             font-weight: bold;
             color: white;
+            text-align: center;
             z-index: 10;
             border: 4px solid black;
         }
@@ -117,13 +119,17 @@
 <body>
     <!-- Botón de inicio del juego con texto "Tócame" -->
     <button id="startButton">
-        <div class="bubble">Tócame</div> <!-- Aquí se agrega el texto "Tócame" en la bomba -->
+        <div class="bubble">Tócame</div>
     </button>
 
     <div id="gameArea"></div>
 
-    <!-- Audio para la explosión -->
-    <audio id="explosion-sound" src="https://github.com/soyluema/El-Juego-De-Mael-Mobile/raw/main/explosion.mp3" preload="auto"></audio>
+    <!-- Audio para los diferentes sonidos -->
+    <audio id="explosion-sound" src="https://github.com/soyluema/El-Juego-De-Mael-Mobile/raw/main/explotion.mp3" preload="auto"></audio>
+    <audio id="countdown3-sound" src="https://github.com/soyluema/El-Juego-De-Mael-Mobile/raw/main/3.mp3" preload="auto"></audio>
+    <audio id="countdown2-sound" src="https://github.com/soyluema/El-Juego-De-Mael-Mobile/raw/main/2.mp3" preload="auto"></audio>
+    <audio id="countdown1-sound" src="https://github.com/soyluema/El-Juego-De-Mael-Mobile/raw/main/1.mp3" preload="auto"></audio>
+    <audio id="celebration-sound" src="https://github.com/soyluema/El-Juego-De-Mael-Mobile/raw/main/gritos.mp3" preload="auto"></audio>
 
     <script>
         let level = 1;
@@ -141,8 +147,8 @@
             for (let i = 0; i < numConfetti; i++) {
                 const confetti = document.createElement('div');
                 confetti.classList.add('confetti');
-                confetti.style.left = `${x + Math.random() * 40 - 20}px`;
-                confetti.style.top = `${y + Math.random() * 40 - 20}px`;
+                confetti.style.left = `${Math.random() * window.innerWidth}px`; // Confetti en todo el ancho
+                confetti.style.top = `${Math.random() * 50}px`; // Confetti solo desde la parte superior
                 confetti.style.backgroundColor = colorsConfetti[Math.floor(Math.random() * colorsConfetti.length)];
                 confetti.style.animationDuration = `${Math.random() * 2 + 1}s`;
                 confetti.style.animationDelay = `${Math.random() * 1}s`;
@@ -163,6 +169,10 @@
             // Crear confetti alrededor de las bombas
             createConfetti(window.innerWidth / 2, window.innerHeight / 2);
 
+            // Reproducir sonido de celebración
+            const celebrationSound = document.getElementById("celebration-sound");
+            celebrationSound.play();
+
             setTimeout(() => {
                 congrats.remove();
                 setTimeout(playLevel, 1000);
@@ -173,7 +183,6 @@
         document.getElementById('startButton').addEventListener('click', startGame);
 
         function startGame() {
-            // Desaparece el botón de inicio cuando se hace clic
             document.getElementById('startButton').style.display = 'none';
 
             // Crear confetti cuando el juego comienza
@@ -224,7 +233,7 @@
             }, 1000);
         }
 
-        // Crear burbuja
+        // Función para crear una bomba (burbuja)
         function createBubble() {
             const bubble = document.createElement('div');
             const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -234,28 +243,18 @@
             bubble.style.height = `${bubbleSize}px`;
             bubble.style.top = `${Math.random() * 70 + 10}vh`;
             bubble.style.left = `${Math.random() * 70 + 10}vw`;
-            gameArea.appendChild(bubble);
 
-            bubble.style.animationDuration = `${bubbleSpeed}s`;
+            bubble.innerText = "¡Tócame!";
 
-            bubble.addEventListener('click', (e) => {
-                const { clientX: x, clientY: y } = e;
+            // Reproducir sonido de explosión cuando se hace clic en la bomba
+            bubble.addEventListener('click', () => {
+                const explosionSound = document.getElementById("explosion-sound");
+                explosionSound.play();
                 bubble.remove();
-                score++;
-                createConfetti(x, y);
-                playExplosionSound(); // Reproducir el sonido de explosión
-                if (score === level) {
-                    level++;
-                    setTimeout(() => {
-                        showCongratulations();
-                    }, 500);
-                }
+                showCongratulations();
             });
-        }
 
-        // Reproducir el sonido de la explosión
-        function playExplosionSound() {
-            document.getElementById('explosion-sound').play();
+            gameArea.appendChild(bubble);
         }
     </script>
 </body>
