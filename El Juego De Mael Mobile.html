@@ -1,0 +1,256 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Juego De Mael</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffeb3b; /* Fondo amarillo brillante */
+            font-family: 'Comic Sans MS', cursive, sans-serif; /* Fuente divertida */
+            overflow: hidden;
+        }
+        #startButton {
+            padding: 0; /* Eliminamos el texto y padding */
+            border: none;
+            background-color: transparent; /* Botón invisible */
+            cursor: pointer;
+            position: absolute;
+            z-index: 20;
+        }
+        .bubble {
+            width: 20vw;  /* Tamaño de los globos en función del ancho de la pantalla */
+            height: 20vw;
+            position: absolute;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+            animation: move 3s ease-out infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4vw;
+            font-weight: bold;
+            color: white;
+            z-index: 10; /* Asegura que las burbujas se vean por encima de otros elementos */
+            border: 4px solid black; /* Contorno negro alrededor de la bomba */
+        }
+        .bubble::after {
+            content: '';
+            position: absolute;
+            width: 1vw;
+            height: 4vw;
+            background-color: #333; /* Hilo negro debajo de la bomba */
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        @keyframes move {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15vh) rotate(180deg); }
+            100% { transform: translateY(0) rotate(360deg); }
+        }
+        @keyframes randomMovement {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(10vw, -5vh); }
+            100% { transform: translate(0, 0); }
+        }
+        .countdown {
+            position: absolute;
+            font-size: 10vw;
+            font-weight: bold;
+            color: #ff6347; /* Naranja brillante */
+            opacity: 0;
+            transform: scale(0.5);
+            animation: growFade 1s ease-out forwards;
+        }
+        @keyframes growFade {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1.5); }
+            100% { opacity: 0; transform: scale(3); }
+        }
+        #gameArea {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Estilo para el confetti */
+        .confetti {
+            position: absolute;
+            width: 5vw;
+            height: 5vw;
+            background-color: #ff4081;
+            opacity: 1;
+            animation: fall 1.5s linear infinite, spin 1.5s ease-in-out infinite;
+        }
+
+        @keyframes fall {
+            0% { top: -5vw; }
+            100% { top: 100vh; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .congratulations {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10vw;
+            font-weight: bold;
+            color: #ff6347;
+            z-index: 20;
+            animation: bounce 1.5s infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            100% { transform: translate(-50%, -55%) scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <button id="startButton">
+        <div class="bubble"></div> <!-- Esta es la burbuja que se debe hacer clic -->
+    </button>
+    <div id="gameArea"></div>
+
+    <script>
+        let level = 1;
+        let score = 0;
+        let bubbleSize = 20; // Tamaño inicial del globo en unidades relativas
+        let bubbleSpeed = 1.5; // Velocidad inicial de los globos
+        const countdownNumbers = ["3", "2", "1"];
+        const colors = ['#ff6347', '#ffa500', '#ff69b4', '#7fffd4', '#9370db', '#ffd700', '#20b2aa'];
+        const gameArea = document.getElementById('gameArea');
+
+        // Función para crear confetti en cualquier parte de la pantalla
+        function createConfetti(x, y) {
+            const colorsConfetti = ['#ff6347', '#ffa500', '#ff69b4', '#7fffd4', '#9370db', '#ffd700', '#20b2aa'];
+            const numConfetti = 100;  // Número de confites a generar
+            for (let i = 0; i < numConfetti; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = `${x + Math.random() * 20 - 10}vw`;  // Confites alrededor del clic
+                confetti.style.top = `${y + Math.random() * 20 - 10}vh`;
+                confetti.style.backgroundColor = colorsConfetti[Math.floor(Math.random() * colorsConfetti.length)];
+                confetti.style.animationDuration = `${Math.random() * 2 + 1}s`; // Duración aleatoria
+                confetti.style.animationDelay = `${Math.random() * 1}s`; // Retardo aleatorio
+                gameArea.appendChild(confetti);
+                setTimeout(() => {
+                    confetti.remove();  // Eliminar confetti después de la animación
+                }, 3000);
+            }
+        }
+
+        // Función para mostrar la palabra "Felicidades"
+        function showCongratulations() {
+            const congrats = document.createElement('div');
+            congrats.classList.add('congratulations');
+            congrats.textContent = "¡Felicidades!";
+            gameArea.appendChild(congrats);
+
+            // Crear confetti alrededor de las bombas
+            createConfetti(window.innerWidth / 2, window.innerHeight / 2);
+
+            setTimeout(() => {
+                congrats.remove();  // Eliminar el mensaje después de un rato
+                setTimeout(playLevel, 1000); // Esperar un poco antes de iniciar el siguiente nivel
+            }, 3000);
+        }
+
+        // Función para iniciar el juego
+        document.getElementById('startButton').addEventListener('click', startGame);
+
+        function startGame() {
+            // Desaparece el botón
+            document.getElementById('startButton').style.display = 'none';
+
+            // Crear confetti cuando el juego comienza
+            createConfetti(window.innerWidth / 2, window.innerHeight / 2);
+
+            let index = 0;
+            function showCountdown() {
+                if (index < countdownNumbers.length) {
+                    const countdown = document.createElement('div');
+                    countdown.className = 'countdown';
+                    countdown.textContent = countdownNumbers[index];
+                    document.body.appendChild(countdown);
+                    setTimeout(() => {
+                        countdown.remove();
+                        index++;
+                        showCountdown();
+                    }, 1000);
+                } else {
+                    setTimeout(playLevel, 1000); // Asegurarse de que la animación de cuenta regresiva termine antes de iniciar el juego
+                }
+            }
+            showCountdown();
+        }
+
+        // Función para iniciar un nivel
+        function playLevel() {
+            score = 0;
+            gameArea.innerHTML = ''; // Limpiar área de juego antes de cada nivel
+
+            // Reducir el tamaño del globo en cada nivel
+            bubbleSize = Math.max(5, bubbleSize - 2);  // Reducir el tamaño, no menor que 5%
+
+            // Aumentar la velocidad de los globos en cada nivel
+            bubbleSpeed = Math.min(5, bubbleSpeed + 0.5);  // Aumentar velocidad, no mayor que 5
+
+            for (let i = 0; i < level; i++) {
+                createBubble();
+            }
+
+            // Mostrar el conteo del nivel
+            const levelText = document.createElement('div');
+            levelText.className = 'countdown';
+            levelText.textContent = `Ronda ${level}`;
+            document.body.appendChild(levelText);
+            setTimeout(() => {
+                levelText.remove();
+            }, 1000); // Eliminar texto después de 1 segundo
+        }
+
+        // Crear burbuja
+        function createBubble() {
+            const bubble = document.createElement('div');
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            bubble.className = 'bubble';
+            bubble.style.backgroundColor = randomColor;
+            bubble.style.width = `${bubbleSize}vw`;
+            bubble.style.height = `${bubbleSize}vw`;
+            bubble.style.top = `${Math.random() * 70 + 10}vh`;  // Burbuja aleatoriamente en altura
+            bubble.style.left = `${Math.random() * 70 + 10}vw`; // Burbuja aleatoriamente en horizontal
+            gameArea.appendChild(bubble);
+
+            // Añadir movimiento animado
+            bubble.style.animationDuration = `${bubbleSpeed}s`;
+
+            bubble.addEventListener('click', (e) => {
+                const { clientX: x, clientY: y } = e;  // Obtener la posición del clic
+                bubble.remove();
+                score++;
+                createConfetti(x, y);  // Crear confetti en la posición de la bomba
+                if (score === level) {
+                    level++;
+                    setTimeout(() => {
+                        showCongratulations();
+                    }, 500); // Esperar un poco antes de mostrar la celebración
+                }
+            });
+        }
+    </script>
+</body>
+</html>
