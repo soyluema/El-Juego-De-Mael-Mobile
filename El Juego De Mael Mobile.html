@@ -139,6 +139,7 @@
         const countdownNumbers = ["3", "2", "1"];
         const colors = ['#ff6347', '#ffa500', '#ff69b4', '#7fffd4', '#9370db', '#ffd700', '#20b2aa'];
         const gameArea = document.getElementById('gameArea');
+        let totalBombs;
 
         // Función para crear confetti en cualquier parte de la pantalla
         function createConfetti(x, y) {
@@ -217,11 +218,11 @@
             score = 0;
             gameArea.innerHTML = '';
 
-            // Reducir el tamaño del globo en cada nivel
-            bubbleSize = Math.max(50, bubbleSize - 30);
-            bubbleSpeed = Math.min(5, bubbleSpeed + 0.5);
-
-            for (let i = 0; i < level; i++) {
+            // Calcula el número de bombas según el nivel
+            totalBombs = level * 2;  // El número de bombas aumenta con el nivel (2 bombas por nivel)
+            
+            // Crear más bombas para el siguiente nivel
+            for (let i = 0; i < totalBombs; i++) {
                 createBubble();
             }
 
@@ -255,7 +256,7 @@
                 score++;
 
                 // Si se explotan todas las bombas, aumenta el nivel
-                if (score >= level) {
+                if (score >= totalBombs) {
                     level++;
                     showCongratulations();
                 }
