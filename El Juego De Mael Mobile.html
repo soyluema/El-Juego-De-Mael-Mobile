@@ -252,7 +252,13 @@
                 const explosionSound = document.getElementById("explosion-sound");
                 explosionSound.play();
                 bubble.remove();
-                showCongratulations();
+                score++;
+
+                // Si se explotan todas las bombas, aumenta el nivel
+                if (score >= level) {
+                    level++;
+                    showCongratulations();
+                }
             });
 
             gameArea.appendChild(bubble);
